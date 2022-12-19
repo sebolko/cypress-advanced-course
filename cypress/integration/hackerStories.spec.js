@@ -14,7 +14,7 @@ describe("Hacker Stories", () => {
       cy.visit("/");
       cy.wait("@getStories");
 
-      cy.get("#search").clear();
+      cy.get("#search").should("be.visible").clear();
     });
 
     it('shows 20 stories, then the next 20 after clicking "More"', () => {
@@ -29,7 +29,7 @@ describe("Hacker Stories", () => {
         },
       }).as("getStoriesPage1");
 
-      cy.contains("More").click();
+      cy.contains("More").should("be.visible").click();
 
       cy.wait("@getStoriesPage1");
 
@@ -45,9 +45,13 @@ describe("Hacker Stories", () => {
 
       cy.wait("@getNewTermStories");
 
+      cy.getLocalStorage("search").should("be.equal", newTerm);
+
       cy.get(`button:contains(${initialTerm})`).should("be.visible").click();
 
       cy.wait("@getStories");
+
+      cy.getLocalStorage("search").should("be.equal", initialTerm);
 
       cy.get(".item").should("have.length", 20);
 
@@ -103,7 +107,7 @@ describe("Hacker Stories", () => {
         });
 
         it("shows only one story less after dismissing the first one", () => {
-          cy.get(".button-small").first().click();
+          cy.get(".button-small").should("be.visible").first().click();
 
           cy.get(".item").should("have.length", 1);
         });
@@ -191,7 +195,7 @@ describe("Hacker Stories", () => {
         cy.visit("/");
         cy.wait("@geEmptytStories");
 
-        cy.get("#search").clear();
+        cy.get("#search").should("be.visible").clear();
       });
 
       it("shows no story when none is returned", () => {
@@ -202,6 +206,8 @@ describe("Hacker Stories", () => {
         cy.get("#search").type(`${newTerm}{enter}`);
         cy.wait("@getSearchNewTerm");
 
+        cy.getLocalStorage("search").should("be.equal", newTerm);
+
         cy.get(".item").should("have.length", 2);
         cy.get(`button:contains(${initialTerm})`).should("be.visible");
       });
@@ -211,6 +217,8 @@ describe("Hacker Stories", () => {
         cy.get("form").submit();
 
         cy.wait("@getSearchNewTerm");
+
+        cy.getLocalStorage("search").should("be.equal", newTerm);
 
         cy.get(".item").should("have.length", 2);
         cy.get(`button:contains(${initialTerm})`).should("be.visible");
@@ -235,11 +243,15 @@ describe("Hacker Stories", () => {
           );
 
           Cypress._.times(6, () => {
-            cy.get("#search").clear().type(`${faker.random.word()}{enter}`);
+            const randomWord = faker.random.word();
+            cy.get("#search").clear().type(`${randomWord}{enter}`);
             cy.wait("@getRandomStories");
+            cy.getLocalStorage("search").should("be.equal", randomWord);
           });
 
-          cy.get(".last-searches button").should("have.length", 5);
+          cy.get(".last-searches").within(() => {
+            cy.get("button").should("have.length", 5);
+          });
         });
       });
     });
